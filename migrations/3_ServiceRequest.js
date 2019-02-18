@@ -9,7 +9,7 @@ module.exports = function(deployer, network, accounts) {
     Token.setProvider(web3.currentProvider)
     Token.defaults({from: accounts[0], gas: 4000000});
 
-    let _minStake = 1;
+    let _minStake = 100000000;
     let _maxStakers = 100;
 
     deployer.deploy(Token, {overwrite: false}).then((TokenInstance) => deployer.deploy(ServiceRequest, TokenInstance.address, _minStake, _maxStakers));
