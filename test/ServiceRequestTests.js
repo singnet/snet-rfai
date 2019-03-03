@@ -27,17 +27,17 @@ contract('ServiceRequest', function(accounts) {
     var serviceRequest;
     var tokenAddress;
     var token;
-    let N1 = 42000
-    let N2 = 420000
-    let N3 = 42
+    let N1 = 42000 * 100000000
+    let N2 = 420000 * 100000000
+    let N3 = 42 * 100000000
     
-    let GAmt = 10000;
-    let Amt2 = 20;
-    let Amt3 = 30;
-    let Amt4 = 40;
-    let Amt5 = 50;
-    let Amt6 = 60;
-    let Amt7 = 70;
+    let GAmt = 10000  * 100000000;
+    let Amt2 = 20  * 100000000;
+    let Amt3 = 30 * 100000000;
+    let Amt4 = 40 * 100000000;
+    let Amt5 = 50 * 100000000;
+    let Amt6 = 60 * 100000000;
+    let Amt7 = 70 * 100000000;
 
     before(async () => 
         {
@@ -322,6 +322,8 @@ contract('ServiceRequest', function(accounts) {
             //testErrorRevert(await serviceRequest.addFundsToRequest(0, Amt6, {from: accounts[6]}));
             
         });
+
+        
         
         it("Service Request Operations - Vote and Claim Request 8", async function(){
 
@@ -454,6 +456,71 @@ contract('ServiceRequest', function(accounts) {
 
         });
         
+        it("Initial Service Request Operations - Owner Close Request 10.1", async function(){ 
+            
+            let expiration_i = web3.eth.blockNumber + 90;
+            let documentURI_i = 'abcdefghijklmsnopqrstuvwxyz';
+
+            const a2Bal_b = await serviceRequest.balances.call(accounts[2]);
+
+            let requestId_i = (await serviceRequest.nextRequestId.call()).toNumber();
+
+            await createRequestAndVerify(Amt2,expiration_i, documentURI_i, accounts[2]);
+
+            await serviceRequest.closeRequest(requestId_i, {from: accounts[2]});
+
+            const [requestId, requester, totalFund, documentURI, expiration, endSubmission, endEvaluation, status]
+            = await serviceRequest.requests.call(requestId_i);
+
+            console.log(requestId.toNumber() + "," + requester + "," +  totalFund.toNumber() + "," +  documentURI + "," +  expiration.toNumber() + "," +  endSubmission.toNumber() + "," +  endEvaluation.toNumber() + "," +  status.toNumber());
+            
+            assert.equal(Amt2, totalFund.toNumber());
+
+            await serviceRequest.requestClaimBack(requestId_i, {from: accounts[2]});
+
+            const a2Bal_a = await serviceRequest.balances.call(accounts[2]);
+
+            assert.equal(status.toNumber(), 4);
+            assert.equal(a2Bal_a.toNumber(), a2Bal_b.toNumber());
+            
+        });
+
+        it("Initial Service Request Operations - Multiple stake by Owner to request 10.2", async function(){ 
+            
+            let expiration_i = web3.eth.blockNumber + 90;
+            let endSubmission_i = web3.eth.blockNumber + 25;
+            let endEvaluation_i = web3.eth.blockNumber + 50;
+            let documentURI_i = 'abcdefghijklmsnopqrstuvwxyz';
+
+            const a2Bal_b = await serviceRequest.balances.call(accounts[2]);
+
+            let requestId_i = (await serviceRequest.nextRequestId.call()).toNumber();
+
+            await createRequestAndVerify(Amt2,expiration_i, documentURI_i, accounts[2]);
+
+            // Approve the request
+            let newexpiration = expiration_i+10;
+            await approveRequestAndVerify(requestId_i, endSubmission_i, endEvaluation_i, newexpiration, accounts[8]);
+
+            // Add Funds to the request
+            let amtLTMinStake = 10000000 // This amount is less than MinStake in the Contract
+            await addFundsAndValidate(requestId_i, amtLTMinStake, accounts[2]);
+
+            const [requestId, requester, totalFund, documentURI, expiration, endSubmission, endEvaluation, status]
+            = await serviceRequest.requests.call(requestId_i);
+
+            console.log(requestId.toNumber() + "," + requester + "," +  totalFund.toNumber() + "," +  documentURI + "," +  expiration.toNumber() + "," +  endSubmission.toNumber() + "," +  endEvaluation.toNumber() + "," +  status.toNumber());
+            
+            assert.equal(Amt2 + amtLTMinStake, totalFund.toNumber());
+
+            const a2Bal_a = await serviceRequest.balances.call(accounts[2]);
+
+            assert.equal(status.toNumber(), 1);
+            assert.equal(a2Bal_a.toNumber() + Amt2 + amtLTMinStake, a2Bal_b.toNumber());
+            
+        });
+
+
         /*
         it("Load Testing - Multiple Operations 11.0", async function() {
 

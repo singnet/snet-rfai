@@ -143,8 +143,10 @@ contract ServiceRequest {
     public
     returns(bool) 
     {
-        require(balances[msg.sender] >= value);
-        
+        require(balances[msg.sender] >= value && value >= minStake);
+        require(documentURI.length > 0);
+        require(expiration > block.number);
+
         Request memory req;
         requests[nextRequestId] = req;
         
@@ -198,12 +200,13 @@ contract ServiceRequest {
     public
     returns(bool)
     {
-        require(balances[msg.sender] >= amount && amount > 0 && amount >= minStake);
         
         Request storage req = requests[requestId];
-        
+
+        require(balances[msg.sender] >= amount && amount > 0 && (amount >= minStake || req.funds[msg.sender] >= minStake) );
+
         // Request should be Approved - Means in Progress
-        require(req.status == RequestStatus.Approved || (req.status == RequestStatus.Open && req.requester == msg.sender));
+        require(req.status == RequestStatus.Approved);
         
         // Request should not be expired
         require(block.number < req.expiration && block.number < req.endEvaluation);
@@ -279,13 +282,10 @@ contract ServiceRequest {
 
     function closeRequest(uint256 requestId) public returns(bool) {
         
-        // Should be ative foundation Member
-        require(foundationMembers[msg.sender].status);
-        
         Request storage req = requests[requestId];
-        
-        // Request should be active
-        require(req.status == RequestStatus.Approved);  
+
+        // Should be ative foundation Member or Request Owner
+        require((req.status == RequestStatus.Approved && foundationMembers[msg.sender].status) ||  (req.status == RequestStatus.Open && req.requester == msg.sender));  
         
         // Change the status of the Request to Closed
         req.status = RequestStatus.Closed;
@@ -297,6 +297,9 @@ contract ServiceRequest {
     public
     returns(bool)
     {
+
+        require(solutionDocURI.length > 0);
+
         Request storage req = requests[requestId];
 
         // Request should be active
@@ -379,8 +382,8 @@ contract ServiceRequest {
         // Should have stake
         require(req.funds[msg.sender] > 0);
 
-        // Approved request should be expiried or Request is closed / rejected
-        require((block.number > req.expiration && req.status == RequestStatus.Approved) || req.status == RequestStatus.Closed || req.status == RequestStatus.Rejected);
+        // Approved or Open request should be expiried or Request is closed / rejected
+        require((block.number > req.expiration && (req.status == RequestStatus.Approved || req.status == RequestStatus.Open )) || req.status == RequestStatus.Closed || req.status == RequestStatus.Rejected);
         
         balances[msg.sender] = balances[msg.sender].add(req.funds[msg.sender]);
         req.totalFund = req.totalFund.sub(req.funds[msg.sender]);
