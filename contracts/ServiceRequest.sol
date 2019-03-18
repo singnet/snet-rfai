@@ -284,7 +284,7 @@ contract ServiceRequest {
         
         Request storage req = requests[requestId];
 
-        // Should be ative foundation Member or Request Owner
+        // Should be active foundation Member or Request Owner
         require((req.status == RequestStatus.Approved && foundationMembers[msg.sender].status) ||  (req.status == RequestStatus.Open && req.requester == msg.sender));  
         
         // Change the status of the Request to Closed
