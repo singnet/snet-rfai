@@ -1,87 +1,59 @@
 # RFAI-Contracts
 Request for AI Portal Smart Contracts
 
-
-
 High Level Requirements:
 
-1. Request for AI Service
+1. Requesting for an AI Service
 
-    A. Anyone should be able to request for a service in the Web Portal
-  
-    B. Requester can stake on the Service Request
-  
-    c. Service Request details will be available in IPFS and the hash will be in BlockChain Contract
-  
-    d. There is an expiry for the Service Request
-  
-    E. When a new requested is created it will be in a Open State until foundation is Approved
-  
-    F. Requester can extend the request only when it is not approved means in Open state
+    A. Anyone should be able to request for a service in the RFAI DApp
+    B. Requester can back the request using AGI tokens
+    C. Service Request details will be available in IPFS and the hash will be in the RFAI block chain contract
+    D. Every service request has an expiry
+    E. When a new request is created it will be in the ppen State till its reviewed and approved by the foundation
   
 2. Request Approval
 
-    A. Request will be approved by any member from Foundation which is managed in the Contract
-  
-    B. Once approved request state changes to Aproved and available to accept the submissions
-  
-    C. During approval foundation needs to provide following details:
-  
+    A. Request will be approved by designated members of the foundation (managed in the RFAI contract)
+    B. Once approved request state changes to Aproved and is visible in the DApp for all to view. Its eligible for submissions from this point on
+    C. During approval foundation member needs to provide following details:
       i. Submission duration in blocknumbers
-      
       ii. Evaluation duration in blocknumbers
-      
       iii. Expiration duration in case of any change from the expiration provide by the requestor
     
-3. Staking into Request
+3. Backing a Request
 
-    A. Anyone can stake into the request when the request is approved by the foundation
-  
-    B. Stake will be accepted for a non expired request untill evaluation completed
-  
-    C. Even foundation members can also stake into the request
+    A. Anyone can back a service request once it has been approved by the foundation
+    B. Backing is allowed for non expired service request until evaluation is completed
+    C. Foundation members can also back any service request
 
 4. Proposal or Solution Submission
   
-    A. Anyone can submit the solution for a given request which is ready to accept the submissions
-  
-    B. Solution are accepted only during the submission phase as provide by the foundation (Refer Step-2)
+    A. Only services registered on the SingularityNet platform can be submitted as a solution
+    B. Submissions are only accepted during the submission phase as provide by the foundation (Refer Step-2)
+    C. The submission must be signed by the same address used as the owner of the service on the SingularityNet platform
 
-5. Voting a Solution
+5. Voting for a Solution
   
     A. Foundation will vote to shortlist the submissions
-    
-    B. Staking users can vote to any submission not only to shortlisted ones
-    
-    C. Right now only the users who has stake in the respective request can vote for the submission
-
-    d. Validation of the solution will be performed offline. Solution will be available as part of Marketplace.
+    B. Users backing the service request can vote for any submission (not just the shortlisted ones)
+    C. Only the users who are backing a service request can vote for the submission
+    d. Validation of the solution will be performed offline. 
   
 6. Claims
   
-    A. Claims can be done only after the evaluation
-    
+    A. Claims can be done only after the evaluation period and before the expiry period
     B. Solution submitter can claim any time before expiry of the request
-    
-    C. Claims will be caluculated based on the votes from staking users
-      
-      i. In case if there is no votes from staking user, foundation votes are considered
-  
-    D. Claims will be distributed based on the number of votes either by staking user or by foundation members
-  
-    E. Foundation member stake will be distributed as per the respective member shortlisting
+    C. Claims will be caluculated based on the votes from backing users
+      i. In case if there is no votes from any backing user, foundation votes are considered
+    D. Claims will be distributed based on the number of votes either by backing users or by foundation members
 
-7. Stake Reclaim
+7. Reclaiming Tokens
   
-    A. Staking users can reclaim the stake only when the request is expired
-    
-    B. No solution submitter can claim when the request is expired
+    A. AGI tokens used to back a service request can be reclaimed by the backer after the service request is expired
   
 8. Close Request
   
-    A. Only fondation can forcible close the request even after the approval
-    
-    B. Stakes will be given back to the respective stakers of the request
-    
-    C. Request status will changed to Closed
+    A. Only fondation can close a request.
+    B. AGI Tokens used for backing will be returned to the backers
+    C. Request status will change to Closed
 
