@@ -13,7 +13,7 @@ High Level Requirements:
 
     D. Every service request has an expiry
 
-    E. When a new request is created it will be in the ppen State till its reviewed and approved by the foundation
+    E. When a new request is created it will be in the open State till its reviewed and approved by the foundation
   
 2. Request Approval
 
