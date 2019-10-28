@@ -71,6 +71,7 @@ contract ServiceRequest {
     event AddSolutionRequest(uint256 indexed requestId, address indexed submitter, bytes solutionDocURI);
     event VoteRequest(uint256 indexed requestId, address indexed voter, address indexed submitter);
     event ClaimRequest(uint256 indexed requestId, address indexed submitter, uint256 amount);
+    event ClaimBackRequest(uint256 indexed requestId, address indexed stacker, uint256 amount);
     event CloseRequest(uint256 indexed requestId, address indexed actor);
     event RejectRequest(uint256 indexed requestId, address indexed actor);
 
@@ -385,10 +386,14 @@ contract ServiceRequest {
         // Approved or Open request should be expiried or Request is closed / rejected
         require((block.number > req.expiration && (req.status == RequestStatus.Approved || req.status == RequestStatus.Open )) || req.status == RequestStatus.Closed || req.status == RequestStatus.Rejected);
         
+        uint256 claimBackAmt;
+        claimBackAmt = req.funds[msg.sender];
         balances[msg.sender] = balances[msg.sender].add(req.funds[msg.sender]);
         req.totalFund = req.totalFund.sub(req.funds[msg.sender]);
         req.funds[msg.sender] = 0;
         
+        emit ClaimBackRequest(requestId, msg.sender, claimBackAmt);
+
         return true;
     }
 
