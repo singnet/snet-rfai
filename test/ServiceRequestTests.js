@@ -17,7 +17,7 @@ async function testErrorRevert(prom)
     try { await prom }
     catch(e) {
         rezE = e.message.indexOf('revert');
-        console.log("Catch Block: " + e.message);
+        //console.log("Catch Block: " + e.message);
     }
     assert(rezE >= 0, "Must generate error and error message must contain revert");
 }
@@ -78,8 +78,8 @@ contract('ServiceRequest', function(accounts) {
         const [requestId_a, requester_a, totalFund_a, documentURI_a, expiration_a, endSubmission_a, endEvaluation_a, status_a]
         = await serviceRequest.requests.call(requestId_b.toNumber());
 
-        console.log("create -- " + requestId_a.toNumber() + "," + requester_a + "," +  totalFund_a.toNumber() + "," +  documentURI_a + "," +  expiration_a.toNumber() + "," +  endSubmission_a.toNumber() + "," +  endEvaluation_a.toNumber() + "," +  status_a.toNumber());
-        console.log("Creator -- " + _account);
+        //console.log("create -- " + requestId_a.toNumber() + "," + requester_a + "," +  totalFund_a.toNumber() + "," +  documentURI_a + "," +  expiration_a.toNumber() + "," +  endSubmission_a.toNumber() + "," +  endEvaluation_a.toNumber() + "," +  status_a.toNumber());
+        //console.log("Creator -- " + _account);
 
     };
 
@@ -108,7 +108,7 @@ contract('ServiceRequest', function(accounts) {
         const [requestId_a, requester_a, totalFund_a, documentURI_a, expiration_a, endSubmission_a, endEvaluation_a, status_a]
         = await serviceRequest.requests.call(_requestId);
 
-        console.log("approve-- " + requestId_a.toNumber() + "," + requester_a + "," +  totalFund_a.toNumber() + "," +  documentURI_a + "," +  expiration_a.toNumber() + "," +  endSubmission_a.toNumber() + "," +  endEvaluation_a.toNumber() + "," +  status_a.toNumber());
+        //console.log("approve-- " + requestId_a.toNumber() + "," + requester_a + "," +  totalFund_a.toNumber() + "," +  documentURI_a + "," +  expiration_a.toNumber() + "," +  endSubmission_a.toNumber() + "," +  endEvaluation_a.toNumber() + "," +  status_a.toNumber());
 
         assert.equal(expiration_a.toNumber(), _expiration);
         assert.equal(endSubmission_a.toNumber(), _endSubmission);
@@ -135,7 +135,7 @@ contract('ServiceRequest', function(accounts) {
         assert.equal(bal_a.toNumber(), bal_b.toNumber() - _amount);
         
         // To be deleted
-        console.log("Funds -- " + requestId_a.toNumber() + "," + requester_a + "," +  totalFund_a.toNumber() + "," +  documentURI_a + "," +  expiration_a.toNumber() + "," +  endSubmission_a.toNumber() + "," +  endEvaluation_a.toNumber() + "," +  status_a.toNumber());
+        //console.log("Funds -- " + requestId_a.toNumber() + "," + requester_a + "," +  totalFund_a.toNumber() + "," +  documentURI_a + "," +  expiration_a.toNumber() + "," +  endSubmission_a.toNumber() + "," +  endEvaluation_a.toNumber() + "," +  status_a.toNumber());
 
     };
 
@@ -150,12 +150,12 @@ contract('ServiceRequest', function(accounts) {
         await serviceRequest.requestClaim(_requestId, {from: _account});
         const bal_a = await serviceRequest.balances.call(_account);
 
-        console.log(bal_b.toNumber() + "=" + bal_a.toNumber());
+        //console.log(bal_b.toNumber() + "=" + bal_a.toNumber());
         assert.equal(bal_a.toNumber(), bal_b.toNumber() + _increasedAmt);
 
         const [requestId_a, requester_a, totalFund_a, documentURI_a, expiration_a, endSubmission_a, endEvaluation_a, status_a]
         = await serviceRequest.requests.call(_requestId);
-        console.log("claim -- " + requestId_a.toNumber() + "," + requester_a + "," +  totalFund_a.toNumber() + "," +  documentURI_a + "," +  expiration_a.toNumber() + "," +  endSubmission_a.toNumber() + "," +  endEvaluation_a.toNumber() + "," +  status_a.toNumber());
+        //console.log("claim -- " + requestId_a.toNumber() + "," + requester_a + "," +  totalFund_a.toNumber() + "," +  documentURI_a + "," +  expiration_a.toNumber() + "," +  endSubmission_a.toNumber() + "," +  endEvaluation_a.toNumber() + "," +  status_a.toNumber());
 
     };
 
@@ -165,7 +165,7 @@ contract('ServiceRequest', function(accounts) {
         await serviceRequest.requestClaimBack(_requestId, {from: _account});
         const bal_a = await serviceRequest.balances.call(_account);
 
-        console.log(bal_b.toNumber() + "=" + bal_a.toNumber());
+        //console.log(bal_b.toNumber() + "=" + bal_a.toNumber());
         assert.equal(bal_a.toNumber(), bal_b.toNumber() + _increasedAmt);
     };
 
@@ -233,7 +233,7 @@ contract('ServiceRequest', function(accounts) {
             await addAndVerifyFoundationMember(accounts[9], 0, true, accounts[8]);
 
             // Role=0 should not be able to add new member
-            //testErrorRevert(await serviceRequest.addOrUpdateFoundationMembers(accounts[8], 1, true, {from: accounts[9]}));
+            testErrorRevert(serviceRequest.addOrUpdateFoundationMembers(accounts[8], 1, true, {from: accounts[9]}));
 
             // At the end of these test accounts[8] => Role:1 and Accounts[9] => Role:0 will be active as Foundation Members
 
@@ -262,8 +262,8 @@ contract('ServiceRequest', function(accounts) {
             await extendRequestAndVerify(0, newexpiration, accounts[2]);
 
             // Check the negative test cases
-            //testErrorRevert(await serviceRequest.extendRequest(0, newexpiration-1000, {from: accounts[2]})); // Less 
-            //testErrorRevert(await serviceRequest.extendRequest(0, newexpiration+1000, {from: accounts[3]})); // Diff account to extend
+            testErrorRevert(serviceRequest.extendRequest(0, newexpiration-1000, {from: accounts[2]})); // Less 
+            testErrorRevert(serviceRequest.extendRequest(0, newexpiration+1000, {from: accounts[3]})); // Diff account to extend
 
         });
 
@@ -303,7 +303,7 @@ contract('ServiceRequest', function(accounts) {
             const [requestId, requester, totalFund, documentURI, expiration, endSubmission, endEvaluation, status]
             = await serviceRequest.requests.call(0);
 
-            console.log(requestId.toNumber() + "," + requester + "," +  totalFund.toNumber() + "," +  documentURI + "," +  expiration.toNumber() + "," +  endSubmission.toNumber() + "," +  endEvaluation.toNumber() + "," +  status.toNumber());
+            //console.log(requestId.toNumber() + "," + requester + "," +  totalFund.toNumber() + "," +  documentURI + "," +  expiration.toNumber() + "," +  endSubmission.toNumber() + "," +  endEvaluation.toNumber() + "," +  status.toNumber());
             
             await serviceRequest.requestClaimBack(0, {from: accounts[2]});
             await serviceRequest.requestClaimBack(0, {from: accounts[6]});
@@ -319,7 +319,7 @@ contract('ServiceRequest', function(accounts) {
             assert.equal(a7Bal_a.toNumber(), a7Bal_b.toNumber() + Amt7);
 
             // This test should fail as we cant fund to a closed request
-            //testErrorRevert(await serviceRequest.addFundsToRequest(0, Amt6, {from: accounts[6]}));
+            testErrorRevert(serviceRequest.addFundsToRequest(0, Amt6, {from: accounts[6]}));
             
         });
 
@@ -374,7 +374,7 @@ contract('ServiceRequest', function(accounts) {
             await claimAndVerify(requestId_i, accounts[5], (Amt6/3) + (Amt7/2) + (Amt2/2));
 
             // Should fail if we try to claim again
-            //testErrorRevert(await serviceRequest.requestClaim(requestId_i, {from: accounts[3]}));
+            testErrorRevert(serviceRequest.requestClaim(requestId_i, {from: accounts[3]}));
 
         });
 
@@ -426,7 +426,7 @@ contract('ServiceRequest', function(accounts) {
             await claimStakeAndVerify(requestId_i, accounts[7], Amt7);
 
             // Should fail if we try to claim again
-            //testErrorRevert(await serviceRequest.requestClaim(requestId_i, {from: accounts[3]}));
+            testErrorRevert(serviceRequest.requestClaim(requestId_i, {from: accounts[3]}));
 
         });
         
@@ -472,7 +472,7 @@ contract('ServiceRequest', function(accounts) {
             const [requestId, requester, totalFund, documentURI, expiration, endSubmission, endEvaluation, status]
             = await serviceRequest.requests.call(requestId_i);
 
-            console.log(requestId.toNumber() + "," + requester + "," +  totalFund.toNumber() + "," +  documentURI + "," +  expiration.toNumber() + "," +  endSubmission.toNumber() + "," +  endEvaluation.toNumber() + "," +  status.toNumber());
+            //console.log(requestId.toNumber() + "," + requester + "," +  totalFund.toNumber() + "," +  documentURI + "," +  expiration.toNumber() + "," +  endSubmission.toNumber() + "," +  endEvaluation.toNumber() + "," +  status.toNumber());
             
             assert.equal(Amt2, totalFund.toNumber());
 
@@ -509,7 +509,7 @@ contract('ServiceRequest', function(accounts) {
             const [requestId, requester, totalFund, documentURI, expiration, endSubmission, endEvaluation, status]
             = await serviceRequest.requests.call(requestId_i);
 
-            console.log(requestId.toNumber() + "," + requester + "," +  totalFund.toNumber() + "," +  documentURI + "," +  expiration.toNumber() + "," +  endSubmission.toNumber() + "," +  endEvaluation.toNumber() + "," +  status.toNumber());
+            //console.log(requestId.toNumber() + "," + requester + "," +  totalFund.toNumber() + "," +  documentURI + "," +  expiration.toNumber() + "," +  endSubmission.toNumber() + "," +  endEvaluation.toNumber() + "," +  status.toNumber());
             
             assert.equal(Amt2 + amtLTMinStake, totalFund.toNumber());
 
