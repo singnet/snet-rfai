@@ -415,7 +415,7 @@ contract ServiceRequest {
         require(block.number > req.endEvaluation && block.number < req.expiration, "Operation not allowed at this stage");
         
         // Should be Solution Submitter Only and should have atleast one vote
-        require(req.submittedSols[msg.sender].isSubmitted && !req.submittedSols[msg.sender].isClaimed, "Need to be a unclaimed solution submitter");
+        require(req.submittedSols[msg.sender].isSubmitted && !req.submittedSols[msg.sender].isClaimed, "Need to be an unclaimed solution submitter");
         
         fundationVotes = req.votes[address(0)][address(0)];
         for(uint256 i=0; i<req.stakeMembers.length;i++) {
