@@ -145,7 +145,7 @@ contract ServiceRequest {
     public
     returns(bool) 
     {
-        require(balances[msg.sender] >= value && value >= minStake, "Insufficient balance or not meeting the min stake criteria");
+        require(balances[msg.sender] >= value && value >= minStake, "Insufficient balance or min stake criteria not met");
         require(documentURI.length > 0, "Invalid document URI");
         require(expiration > block.number, "Invalid expiration");
 
