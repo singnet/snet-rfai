@@ -65,6 +65,7 @@ contract ServiceRequest {
     // Events
     event AddFoundationMember(address indexed member, uint role, bool status, address indexed actor);
     event CreateRequest(uint256 requestId, address indexed requester, uint256 expiration, uint256 amount, bytes documentURI);
+    event UpdateRequest(uint256 requestId, address indexed requester, uint256 expiration, bytes documentURI);
     event ExtendRequest(uint256 indexed requestId, address indexed requester, uint256 expiration);
     event ApproveRequest(uint256 indexed requestId, address indexed approver, uint256 endSubmission, uint256 endEvaluation, uint256 expiration);
     event FundRequest(uint256 indexed requestId, address indexed staker, uint256 amount);
@@ -98,15 +99,15 @@ contract ServiceRequest {
     public
     returns(bool)
     {
-        require(balances[msg.sender] >= value);
-        require(token.transfer(msg.sender, value));
+        require(balances[msg.sender] >= value, "Insufficient balance in the escrow");
+        require(token.transfer(msg.sender, value), "Unable to transfer token back to the account");
         balances[msg.sender] = balances[msg.sender].sub(value);
         return true;
     }
     
     function updateOwner(address newOwner) public returns(bool) {
-        require(owner == msg.sender);
-        require(newOwner != address(0));
+        require(owner == msg.sender, "Invalid sender");
+        require(newOwner != address(0), "Invalid owner address");
         
         owner = newOwner;
         
@@ -114,7 +115,7 @@ contract ServiceRequest {
     }
 
     function updateLimits(uint256 _minStake, uint256 _maxStakers) public returns(bool) {
-        require(owner == msg.sender);
+        require(owner == msg.sender, "Invalid sender");
         minStake = _minStake;
         maxStakers = _maxStakers;
         return true;
@@ -122,9 +123,9 @@ contract ServiceRequest {
     
     function addOrUpdateFoundationMembers(address member, uint role, bool active) public returns (bool) {
         
-        require(owner == msg.sender || (foundationMembers[msg.sender].role == 1 && foundationMembers[msg.sender].status));
-        require(member != address(0));
-        require(role == 0 || role == 1);
+        require(owner == msg.sender || (foundationMembers[msg.sender].role == 1 && foundationMembers[msg.sender].status), "Operation not allowed");
+        require(member != address(0), "Invalid member address");
+        require(role == 0 || role == 1, "Invalid role parameter");
         
         Member memory mem;
         if(!foundationMembers[member].exists) {
@@ -144,9 +145,9 @@ contract ServiceRequest {
     public
     returns(bool) 
     {
-        require(balances[msg.sender] >= value && value >= minStake);
-        require(documentURI.length > 0);
-        require(expiration > block.number);
+        require(balances[msg.sender] >= value && value >= minStake, "Insufficient balance or min stake criteria not met");
+        require(documentURI.length > 0, "Invalid document URI");
+        require(expiration > block.number, "Invalid expiration");
 
         Request memory req;
         requests[nextRequestId] = req;
@@ -172,11 +173,31 @@ contract ServiceRequest {
     public
     returns(bool)
     {
-        require(deposit(value));
-        require(createRequest(value, expiration, documentURI));
+        require(deposit(value), "Unable to deposit into escrow");
+        require(createRequest(value, expiration, documentURI), "Unable to create a new request");
         return true;
     }
 
+    function updateRequest(uint256 requestId, uint256 expiration, bytes documentURI) 
+    public
+    returns(bool) 
+    {
+
+        require(documentURI.length > 0, "Invalid document URI");
+        require(expiration > block.number, "Invalid expiration");
+
+        Request storage req = requests[requestId];
+
+        require(msg.sender == req.requester, "Invalid sender");
+        require(req.status == RequestStatus.Open, "Operation not allowed at this stage");
+
+        req.documentURI = documentURI;
+        req.expiration = expiration;
+        
+        emit UpdateRequest(requestId, msg.sender, expiration, documentURI);
+
+        return true;
+    }
 
     /// the sender can extend the expiration of the request at any time
     function extendRequest(uint256 requestId, uint256 newExpiration) 
@@ -185,9 +206,9 @@ contract ServiceRequest {
     {
         Request storage req = requests[requestId];
 
-        require(msg.sender == req.requester);
-        require(req.status == RequestStatus.Open);
-        require(newExpiration >= req.expiration);
+        require(msg.sender == req.requester, "Invalid sender");
+        require(req.status == RequestStatus.Open, "Operation not allowed at this stage");
+        require(newExpiration >= req.expiration, "Invalid expiration");
 
         req.expiration = newExpiration;
 
@@ -207,13 +228,13 @@ contract ServiceRequest {
         require(balances[msg.sender] >= amount && amount > 0 && (amount >= minStake || req.funds[msg.sender] >= minStake) );
 
         // Request should be Approved - Means in Progress
-        require(req.status == RequestStatus.Approved);
+        require(req.status == RequestStatus.Approved, "Operation not allowed at this stage");
         
         // Request should not be expired
-        require(block.number < req.expiration && block.number < req.endEvaluation);
+        require(block.number < req.expiration && block.number < req.endEvaluation, "Operation not allowed at this stage");
 
         // Check for Max Stakers only for new stake 
-        require(req.stakeMembers.length < maxStakers || req.funds[msg.sender] > 0);
+        require(req.stakeMembers.length < maxStakers || req.funds[msg.sender] > 0, "Exceeding max stakers limit");
 
         //tranfser amount from sender to the Service Request
         balances[msg.sender] = balances[msg.sender].sub(amount);
@@ -235,23 +256,23 @@ contract ServiceRequest {
     function extendAndAddFundsToRequest(uint256 requestId, uint256 newExpiration, uint256 amount)
     public
     {
-        require(extendRequest(requestId, newExpiration));
-        require(addFundsToRequest(requestId, amount));
+        require(extendRequest(requestId, newExpiration), "Unable to extend the request");
+        require(addFundsToRequest(requestId, amount), "Unable to add funds to the request");
     }
     
     function approveRequest(uint256 requestId, uint256 endSubmission, uint256 endEvaluation, uint256 newExpiration) public returns(bool) {
         
         // Should be foundation Member
-        require(foundationMembers[msg.sender].status);
+        require(foundationMembers[msg.sender].status, "Invalid foundation member");
         
         Request storage req = requests[requestId];
         
         // Request should be active
-        require(req.status == RequestStatus.Open);
+        require(req.status == RequestStatus.Open, "Operation not allowed at this stage");
         
         // Request should not be expired -- We should allow this
-        //require(req.expiration > block.number);
-        require(endSubmission < endEvaluation && endEvaluation < newExpiration && newExpiration >= req.expiration );
+        //require(req.expiration > block.number, "Invalid expiration");
+        require(endSubmission > block.number && endSubmission < endEvaluation && endEvaluation < newExpiration && newExpiration >= req.expiration, "Invalid request stages" );
         
         req.status = RequestStatus.Approved;
         req.endSubmission = endSubmission;
@@ -266,12 +287,12 @@ contract ServiceRequest {
     function rejectRequest(uint256 requestId) public returns(bool) {
         
         // Should be foundation Member
-        require(foundationMembers[msg.sender].status);
+        require(foundationMembers[msg.sender].status, "Invalid foundation member");
         
         Request storage req = requests[requestId];
         
         // Request should be active
-        require(req.status == RequestStatus.Open);
+        require(req.status == RequestStatus.Open, "Opeartion not allowed at this stage");
         
         // Change the status of the Request to Rejected
         req.status = RequestStatus.Rejected;
@@ -286,7 +307,7 @@ contract ServiceRequest {
         Request storage req = requests[requestId];
 
         // Should be active foundation Member or Request Owner
-        require((req.status == RequestStatus.Approved && foundationMembers[msg.sender].status) ||  (req.status == RequestStatus.Open && req.requester == msg.sender));  
+        require((req.status == RequestStatus.Approved && foundationMembers[msg.sender].status) ||  (req.status == RequestStatus.Open && req.requester == msg.sender), "Invalid sender");  
         
         // Change the status of the Request to Closed
         req.status = RequestStatus.Closed;
@@ -304,10 +325,10 @@ contract ServiceRequest {
         Request storage req = requests[requestId];
 
         // Request should be active
-        require(req.status == RequestStatus.Approved);
+        require(req.status == RequestStatus.Approved, "Operation is not allowed at this stage");
         
         // Request should not be expired
-        require(block.number < req.expiration && block.number <= req.endSubmission);
+        require(block.number < req.expiration && block.number <= req.endSubmission, "Exceeding the submission stage");
         
         Solution memory sol;
 
@@ -333,13 +354,13 @@ contract ServiceRequest {
         Request storage req = requests[requestId];
         
         // Request should be active
-        require(req.status == RequestStatus.Approved);
+        require(req.status == RequestStatus.Approved, "Opration not allowed at this stage");
         
         // Request should not be expired
-        require(block.number < req.expiration && block.number > req.endSubmission && block.number <= req.endEvaluation);
+        require(block.number < req.expiration && block.number > req.endSubmission && block.number <= req.endEvaluation, "Exceeding the evaluation stage");
         
         // Should be foundation Member or Staking Member to Vote
-        require(foundationMembers[msg.sender].status || req.funds[msg.sender] > 0);
+        require(foundationMembers[msg.sender].status || req.funds[msg.sender] > 0, "Invalid sender");
         
         // Check for solution Submitter status and cannot for own submission
         require(req.submittedSols[solutionSubmitter].isSubmitted && msg.sender != solutionSubmitter);
@@ -378,13 +399,13 @@ contract ServiceRequest {
         Request storage req = requests[requestId];
         
         // Request should have funds
-        require(req.totalFund > 0);
+        require(req.totalFund > 0, "No fund to claim");
 
         // Should have stake
-        require(req.funds[msg.sender] > 0);
+        require(req.funds[msg.sender] > 0, "Invalid sender");
 
         // Approved or Open request should be expiried or Request is closed / rejected
-        require((block.number > req.expiration && (req.status == RequestStatus.Approved || req.status == RequestStatus.Open )) || req.status == RequestStatus.Closed || req.status == RequestStatus.Rejected);
+        require((block.number > req.expiration && (req.status == RequestStatus.Approved || req.status == RequestStatus.Open )) || req.status == RequestStatus.Closed || req.status == RequestStatus.Rejected, "Claims not allowed at this stage");
         
         uint256 claimBackAmt;
         claimBackAmt = req.funds[msg.sender];
@@ -409,13 +430,13 @@ contract ServiceRequest {
         Request storage req = requests[requestId];
         
         // Request should be active and should have funds
-        require(req.status == RequestStatus.Approved && req.totalFund > 0);
+        require(req.status == RequestStatus.Approved && req.totalFund > 0, "Operation not allowed at this stage");
         
         // Request should complete the eveluation and should not expire
-        require(block.number > req.endEvaluation && block.number < req.expiration);
+        require(block.number > req.endEvaluation && block.number < req.expiration, "Operation not allowed at this stage");
         
         // Should be Solution Submitter Only and should have atleast one vote
-        require(req.submittedSols[msg.sender].isSubmitted && !req.submittedSols[msg.sender].isClaimed);
+        require(req.submittedSols[msg.sender].isSubmitted && !req.submittedSols[msg.sender].isClaimed, "Need to be an unclaimed solution submitter");
         
         fundationVotes = req.votes[address(0)][address(0)];
         for(uint256 i=0; i<req.stakeMembers.length;i++) {

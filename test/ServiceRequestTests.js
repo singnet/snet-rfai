@@ -83,6 +83,20 @@ contract('ServiceRequest', function(accounts) {
 
     };
 
+    const updateRequestAndVerify = async (_requestId, _expiration, _documentURI, _account) => {
+
+        await serviceRequest.updateRequest(_requestId,_expiration, _documentURI, {from: _account});
+
+        const [requestId_a, requester_a, totalFund_a, documentURI_a, expiration_a, endSubmission_a, endEvaluation_a, status_a]
+        = await serviceRequest.requests.call(_requestId);
+
+        assert.equal(expiration_a.toNumber(), _expiration);
+        assert.equal(web3.toAscii(documentURI_a), _documentURI)
+
+        //console.log("create -- " + requestId_a.toNumber() + "," + requester_a + "," +  totalFund_a.toNumber() + "," +  documentURI_a + "," +  expiration_a.toNumber() + "," +  endSubmission_a.toNumber() + "," +  endEvaluation_a.toNumber() + "," +  status_a.toNumber());
+
+    };
+
     const extendRequestAndVerify = async(_requestId,  _expiration, _account) => {
         const [requestId_b, requester_b, totalFund_b, documentURI_b, expiration_b, endSubmission_b, endEvaluation_b, status_b]
         = await serviceRequest.requests.call(_requestId);
@@ -187,7 +201,7 @@ contract('ServiceRequest', function(accounts) {
 
     // ************************ Test Scenarios Starts From Here ********************************************
 
-    it ("Initial Wallet Operation 1", async function()
+    it ("1. Initial Wallet Operation", async function()
         { 
             // accounts[0] and accounts[1] are used for this testing
             //Deposit 42000 from accounts[0]
@@ -214,7 +228,7 @@ contract('ServiceRequest', function(accounts) {
 
         }); 
 
-        it ("Fondation Member Operations 2", async function(){
+        it ("2. Fondation Member Operations", async function(){
 
             // accounts[8], accounts[9] -> Foundation Members
             await addAndVerifyFoundationMember(accounts[9], 0, true, accounts[0]);
@@ -237,9 +251,9 @@ contract('ServiceRequest', function(accounts) {
 
             // At the end of these test accounts[8] => Role:1 and Accounts[9] => Role:0 will be active as Foundation Members
 
-        });      
+        });
 
-        it("Initial Service Request Operations - Create Request 3", async function() 
+        it("3. Initial Service Request Operations - Create Request", async function() 
         {
             
             // accounts[2] -> Request Creator
@@ -256,7 +270,7 @@ contract('ServiceRequest', function(accounts) {
 
         });
 
-        it("Initial Service Request Operations - Extend Request 4", async function(){
+        it("4. Initial Service Request Operations - Extend Request", async function(){
 
             let newexpiration = 200000;
             await extendRequestAndVerify(0, newexpiration, accounts[2]);
@@ -267,21 +281,21 @@ contract('ServiceRequest', function(accounts) {
 
         });
 
-        it("Initial Service Request Operations - Approve Request 5", async function(){
+        it("5. Initial Service Request Operations - Approve Request", async function(){
             
             let newexpiration = 300000;
             approveRequestAndVerify(0, newexpiration-200000, newexpiration-100000, newexpiration, accounts[8]);
 
         });
 
-        it("Initial Service Request Operations - Load Funds into Request 5", async function(){ 
+        it("5.1 Initial Service Request Operations - Load Funds into Request", async function(){ 
             
             await addFundsAndValidate(0, Amt6, accounts[6]);
             await addFundsAndValidate(0, Amt7, accounts[7]);
 
         });
 
-        it("Initial Service Request Operations - Submit Solution to Request 6", async function(){ 
+        it("6. Initial Service Request Operations - Submit Solution to Request", async function(){ 
             
             let solutionDocURI = 'aaalllssllddffgghhjjj';
             await serviceRequest.createOrUpdateSolutionProposal(0, solutionDocURI, {from: accounts[3]});
@@ -293,7 +307,7 @@ contract('ServiceRequest', function(accounts) {
 
         });
 
-        it("Initial Service Request Operations - Force Close Request 7", async function(){ 
+        it("7. Initial Service Request Operations - Force Close Request", async function(){ 
             
             const a2Bal_b = await serviceRequest.balances.call(accounts[2]);
             const a6Bal_b = await serviceRequest.balances.call(accounts[6]);
@@ -325,7 +339,7 @@ contract('ServiceRequest', function(accounts) {
 
         
         
-        it("Service Request Operations - Vote and Claim Request 8", async function(){
+        it("8. Service Request Operations - Vote and Claim Request", async function(){
 
             // Create Service Request
             let expiration_i = web3.eth.blockNumber + 90;
@@ -378,7 +392,7 @@ contract('ServiceRequest', function(accounts) {
 
         });
 
-        it("Service Request Operations - Expiry and ReClaim Stake Request 9", async function(){
+        it("9. Service Request Operations - Expiry and ReClaim Stake Request", async function(){
 
             // Create Service Request
             let expiration_i = web3.eth.blockNumber + 90;
@@ -430,7 +444,7 @@ contract('ServiceRequest', function(accounts) {
 
         });
         
-        it("Service Request Operations - Reject Request 10", async function(){
+        it("10. Service Request Operations - Reject Request", async function(){
 
             // Create Service Request
             let expiration_i = web3.eth.blockNumber + 90;
@@ -456,7 +470,7 @@ contract('ServiceRequest', function(accounts) {
 
         });
         
-        it("Initial Service Request Operations - Owner Close Request 10.1", async function(){ 
+        it("10.1 Initial Service Request Operations - Owner Close Request", async function(){ 
             
             let expiration_i = web3.eth.blockNumber + 90;
             let documentURI_i = 'abcdefghijklmsnopqrstuvwxyz';
@@ -485,7 +499,7 @@ contract('ServiceRequest', function(accounts) {
             
         });
 
-        it("Initial Service Request Operations - Multiple stake by Owner to request 10.2", async function(){ 
+        it("10.2 Initial Service Request Operations - Multiple stake by Owner to request", async function(){ 
             
             let expiration_i = web3.eth.blockNumber + 90;
             let endSubmission_i = web3.eth.blockNumber + 25;
@@ -520,15 +534,49 @@ contract('ServiceRequest', function(accounts) {
             
         });
 
+        it("11. Update request by respective owner in Open State", async function(){ 
+            
+            let expiration_i = web3.eth.blockNumber + 90;
+            let endSubmission_i = web3.eth.blockNumber + 25;
+            let endEvaluation_i = web3.eth.blockNumber + 50;
+            let documentURI_i = 'abcdefghijklmsnopqrstuvwxyz';
+
+            const a2Bal_b = await serviceRequest.balances.call(accounts[2]);
+
+            let requestId_i = (await serviceRequest.nextRequestId.call()).toNumber();
+
+            await createRequestAndVerify(Amt2,expiration_i, documentURI_i, accounts[2]);
+
+            // Updated Values to test the Update Request
+            expiration_i = expiration_i + 90;
+            documentURI_i = 'ipfs://QmUfwZ7pEWBE5zSepKpHDaPibQxpPqoEDRo5Kzai8h5U9B';
+
+            // Update the Request by Non Create - Should fail
+            testErrorRevert(serviceRequest.updateRequest(requestId_i, expiration_i, documentURI_i, {from: accounts[3]}));
+
+            // Update the Request
+            await updateRequestAndVerify(requestId_i, expiration_i, documentURI_i, accounts[2])
+
+            // Approve the request
+            let newexpiration = expiration_i+10;
+            await approveRequestAndVerify(requestId_i, endSubmission_i, endEvaluation_i, newexpiration, accounts[8]);
+
+            // Updated Values to test the Update Request
+            expiration_i = expiration_i + 90;
+            documentURI_i = 'ipfs://QmUfwZ7pEWBE5zSepKpHDaPibQxpPqoEDRo5Kzai8h5U9B';
+            // Update the Request by In Approved State by the requester - Should fail
+            testErrorRevert(serviceRequest.updateRequest(requestId_i, expiration_i, documentURI_i, {from: accounts[2]}));
+            
+        });
 
         /*
-        it("Load Testing - Multiple Operations 11.0", async function() {
+        it("12. Load Testing - Multiple Operations", async function() {
 
             await depositTokensToContract(10, 999, 1000);
 
         });
 
-        it("Load Testing - Multiple Operations 11.1", async function() {
+        it("12.1 Load Testing - Multiple Operations", async function() {
 
             // Create Service Request
             let expiration_i = web3.eth.blockNumber + 4500;
