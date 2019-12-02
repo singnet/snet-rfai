@@ -65,6 +65,7 @@ contract ServiceRequest {
     // Events
     event AddFoundationMember(address indexed member, uint role, bool status, address indexed actor);
     event CreateRequest(uint256 requestId, address indexed requester, uint256 expiration, uint256 amount, bytes documentURI);
+    event UpdateRequest(uint256 requestId, address indexed requester, uint256 expiration, bytes documentURI);
     event ExtendRequest(uint256 indexed requestId, address indexed requester, uint256 expiration);
     event ApproveRequest(uint256 indexed requestId, address indexed approver, uint256 endSubmission, uint256 endEvaluation, uint256 expiration);
     event FundRequest(uint256 indexed requestId, address indexed staker, uint256 amount);
@@ -177,6 +178,26 @@ contract ServiceRequest {
         return true;
     }
 
+    function updateRequest(uint256 requestId, uint256 expiration, bytes documentURI) 
+    public
+    returns(bool) 
+    {
+
+        require(documentURI.length > 0, "Invalid document URI");
+        require(expiration > block.number, "Invalid expiration");
+
+        Request storage req = requests[requestId];
+
+        require(msg.sender == req.requester, "Invalid sender");
+        require(req.status == RequestStatus.Open, "Operation not allowed at this stage");
+
+        req.documentURI = documentURI;
+        req.expiration = expiration;
+        
+        emit UpdateRequest(requestId, msg.sender, expiration, documentURI);
+
+        return true;
+    }
 
     /// the sender can extend the expiration of the request at any time
     function extendRequest(uint256 requestId, uint256 newExpiration) 
