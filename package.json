@@ -1,6 +1,6 @@
 {
   "name": "rfai-contracts",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "private": true,
   "description": "Includes RFAI contracts, migrations, tests",
   "directories": {
@@ -17,7 +17,7 @@
     "type": "git",
     "url": "git+https://github.com/singnet/snet-rfai.git"
   },
-  "author": "SridharK",
+  "author": "SingularityNET",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/singnet/snet-rfai.git/issues"
