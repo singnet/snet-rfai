@@ -1,5 +1,5 @@
 {
-  "name": "rfai-contracts",
+  "name": "singularitynet-rfai-contracts",
   "version": "0.2.7",
   "private": true,
   "description": "Includes RFAI contracts, migrations, tests",
