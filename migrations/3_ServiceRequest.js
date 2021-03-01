@@ -1,5 +1,5 @@
 let ServiceRequest = artifacts.require("./ServiceRequest.sol");
-let Contract = require("truffle-contract");
+let Contract = require("@truffle/contract");
 let TokenAbi = require("singularitynet-token-contracts/abi/SingularityNetToken.json");
 let TokenNetworks = require("singularitynet-token-contracts/networks/SingularityNetToken.json");
 let TokenBytecode = require("singularitynet-token-contracts/bytecode/SingularityNetToken.json");
@@ -13,4 +13,5 @@ module.exports = function(deployer, network, accounts) {
     let _maxStakers = 100;
 
     deployer.deploy(Token, {overwrite: false}).then((TokenInstance) => deployer.deploy(ServiceRequest, TokenInstance.address, _minStake, _maxStakers));
+    //deployer.deploy(Token).then((TokenInstance) => deployer.deploy(ServiceRequest, TokenInstance.address, _minStake, _maxStakers));
 };
