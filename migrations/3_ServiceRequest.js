@@ -12,6 +12,6 @@ module.exports = function(deployer, network, accounts) {
     let _minStake = 100000000;
     let _maxStakers = 100;
 
-    deployer.deploy(Token, {overwrite: false}).then((TokenInstance) => deployer.deploy(ServiceRequest, TokenInstance.address, _minStake, _maxStakers));
+    deployer.deploy(Token, { overwrite: false, gas: 4000000 }).then((TokenInstance) => deployer.deploy(ServiceRequest, TokenInstance.address, _minStake, _maxStakers));
     //deployer.deploy(Token).then((TokenInstance) => deployer.deploy(ServiceRequest, TokenInstance.address, _minStake, _maxStakers));
 };
