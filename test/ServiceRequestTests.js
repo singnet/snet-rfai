@@ -27,6 +27,7 @@ contract('ServiceRequest', function(accounts) {
     var serviceRequest;
     var tokenAddress;
     var token;
+    let mint_Tokens = 5000000 * 100000000;
     let N1 = 42000 * 100000000
     let N2 = 420000 * 100000000
     let N3 = 42 * 100000000
@@ -180,7 +181,12 @@ contract('ServiceRequest', function(accounts) {
     // ************************ Test Scenarios Starts From Here ********************************************
 
     it ("1. Initial Wallet Operation", async function()
-        { 
+        {
+            
+            // Minting enough tokens for the test cases
+            // An explicit call is required to mint the tokens
+            //await token.mint(accounts[0],mint_Tokens, {from:accounts[0]});
+
             // accounts[0] and accounts[1] are used for this testing
             //Deposit 42000 from accounts[0]
             await token.approve(serviceRequest.address,N1, {from:accounts[0]});
