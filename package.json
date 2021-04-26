@@ -25,7 +25,7 @@
   "homepage": "https://github.com/singnet/snet-rfai.git#readme",
   "dependencies": {
     "openzeppelin-solidity": "1.11.0",
-    "singularitynet-token-contracts": "new version",
+    "singularitynet-token-contracts": "3.0.0",
     "truffle": "4.1.13",
     "truffle-contract": "3.0.6",
     "truffle-hdwallet-provider": "0.0.5"
