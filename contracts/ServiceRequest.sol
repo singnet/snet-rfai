@@ -1,9 +1,9 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.6.0;
 
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
-contract ServiceRequest {
+contract ServiceRequest{
     
     using SafeMath for uint256;
     
@@ -61,7 +61,6 @@ contract ServiceRequest {
  
     ERC20 public token; // Address of token contract
     
-
     // Events
     event AddFoundationMember(address indexed member, uint role, bool status, address indexed actor);
     event CreateRequest(uint256 requestId, address indexed requester, uint256 expiration, uint256 amount, bytes documentURI);
@@ -90,7 +89,7 @@ contract ServiceRequest {
     public
     returns(bool) 
     {
-        require(token.transferFrom(msg.sender, this, value), "Unable to transfer token to the contract"); 
+        require(token.transferFrom(msg.sender, address(this), value), "Unable to transfer token to the contract"); 
         balances[msg.sender] = balances[msg.sender].add(value);
         return true;
     }
@@ -141,7 +140,7 @@ contract ServiceRequest {
         return true;
     }
     
-    function createRequest(uint256 value, uint256 expiration, bytes documentURI) 
+    function createRequest(uint256 value, uint256 expiration, bytes memory documentURI) 
     public
     returns(bool) 
     {
@@ -169,7 +168,7 @@ contract ServiceRequest {
         return true;
     }
 
-    function depositAndCreateRequest(uint256 value, uint256 expiration, bytes documentURI)
+    function depositAndCreateRequest(uint256 value, uint256 expiration, bytes memory documentURI)
     public
     returns(bool)
     {
@@ -178,7 +177,7 @@ contract ServiceRequest {
         return true;
     }
 
-    function updateRequest(uint256 requestId, uint256 expiration, bytes documentURI) 
+    function updateRequest(uint256 requestId, uint256 expiration, bytes memory documentURI) 
     public
     returns(bool) 
     {
@@ -315,7 +314,7 @@ contract ServiceRequest {
         emit CloseRequest(requestId, msg.sender);
     }
     
-    function createOrUpdateSolutionProposal(uint256 requestId, bytes solutionDocURI)
+    function createOrUpdateSolutionProposal(uint256 requestId, bytes memory solutionDocURI)
     public
     returns(bool)
     {
@@ -471,50 +470,47 @@ contract ServiceRequest {
 
 
     // Getters
-    function getFoundationMemberKeys() public view returns (address[]) {
+    function getFoundationMemberKeys() public view returns (address[] memory) {
         return memberKeys;
     }
 
     function getServiceRequestById(uint256 reqId) public view 
-    returns (bool found, uint256 requestId, address requester, uint256 totalFund, bytes documentURI, uint256 expiration, uint256 endSubmission, uint256 endEvaluation, RequestStatus status, address[] stakeMembers, address[] submitters) 
+    returns (bool found, uint256 requestId, address requester, uint256 totalFund, bytes memory documentURI, uint256 expiration, uint256 endSubmission, uint256 endEvaluation, RequestStatus status, address[] memory stakeMembers, address[] memory submitters) 
     {
         Request memory req = requests[reqId];
 
         if(req.requester == address(0)) {
             found = false;
-            return;
+        } else {
+            found = true;
+            requestId = req.requestId;
+            requester = req.requester; 
+            totalFund = req.totalFund; 
+            documentURI = req.documentURI; 
+            expiration = req.expiration; 
+            endSubmission = req.endSubmission;
+            endEvaluation = req.endEvaluation; 
+            status = req.status; 
+            stakeMembers = req.stakeMembers; 
+            submitters = req.submitters;
         }
-
-        found = true;
-        requestId = req.requestId;
-        requester = req.requester; 
-        totalFund = req.totalFund; 
-        documentURI = req.documentURI; 
-        expiration = req.expiration; 
-        endSubmission = req.endSubmission;
-        endEvaluation = req.endEvaluation; 
-        status = req.status; 
-        stakeMembers = req.stakeMembers; 
-        submitters = req.submitters;
     }
 
     function getSubmittedSolutionById(uint256 requestId, address submitter) public view 
-    returns (bool found, bytes solutionDocURI, uint256 totalVotes, bool isSubmitted, bool isShortlisted, bool isClaimed)
+    returns (bool found, bytes memory solutionDocURI, uint256 totalVotes, bool isSubmitted, bool isShortlisted, bool isClaimed)
     {
         Request storage req = requests[requestId];
 
         if(req.submittedSols[submitter].isSubmitted == false) {
             found = false;
-            return;
+        } else {
+            found = true;
+            solutionDocURI = req.submittedSols[submitter].solutionDocURI;
+            totalVotes = req.submittedSols[submitter].totalVotes;
+            isSubmitted = req.submittedSols[submitter].isSubmitted;
+            isShortlisted =  req.submittedSols[submitter].isShortlisted;
+            isClaimed = req.submittedSols[submitter].isClaimed;
         }
-
-        found = true;
-        solutionDocURI = req.submittedSols[submitter].solutionDocURI;
-        totalVotes = req.submittedSols[submitter].totalVotes;
-        isSubmitted = req.submittedSols[submitter].isSubmitted;
-        isShortlisted =  req.submittedSols[submitter].isShortlisted;
-        isClaimed = req.submittedSols[submitter].isClaimed;
-
     }
 
     function getStakeById(uint256 requestId, address staker) public view 
@@ -523,11 +519,10 @@ contract ServiceRequest {
         Request storage req = requests[requestId];
         if(req.funds[staker] == 0) {
             found = false;
-            return;
+        } else {
+            found = true;
+            stake = req.funds[staker];
         }
-        found = true;
-        stake = req.funds[staker];
-
     }
   
 }
