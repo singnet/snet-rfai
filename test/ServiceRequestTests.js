@@ -185,7 +185,7 @@ contract('ServiceRequest', function(accounts) {
             
             // Minting enough tokens for the test cases
             // An explicit call is required to mint the tokens
-            //await token.mint(accounts[0],mint_Tokens, {from:accounts[0]});
+            await token.mint(accounts[0],mint_Tokens, {from:accounts[0]});
 
             // accounts[0] and accounts[1] are used for this testing
             //Deposit 42000 from accounts[0]

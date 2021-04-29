@@ -92,7 +92,11 @@ module.exports = {
        provider: () => provider("https://ropsten.infura.io/v3/" + process.env.InfuraKey),
        network_id: "3", // ropsten network ID, 
    },
-
+   main: {
+    gasPrice: 70000000000,
+    provider: () => provider("https://mainnet.infura.io/v3/" + process.env.InfuraKey),
+    network_id: "1" // mainnet network ID
+   },
  },
 
  // Set default mocha options here, use special reporters etc.
